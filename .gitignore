@@ -1,0 +1,35 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+*.log
+*.pid
+*.sqlite3
+
+# Virtual environments
+.venv/
+env/
+venv/
+
+# Streamlit
+.streamlit/
+
+# Docker
+*.db
+*.bak
+*.swp
+*.tmp
+
+# Jupyter (caso use)
+.ipynb_checkpoints/
+
+# VSCode / PyCharm / IDEs
+.vscode/
+.idea/
+
+# Sistema
+.DS_Store
+Thumbs.db
+
+# Arquivos de ambiente
+.env
