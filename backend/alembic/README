@@ -1,0 +1,78 @@
+
+### 📁 `alembic/README.md`
+
+````markdown
+# 🛠️ Alembic Migrations – SupplyCrew
+
+Este diretório contém os scripts de **migração de banco de dados** do projeto SupplyCrew, gerenciados via [Alembic](https://alembic.sqlalchemy.org/).
+
+---
+
+## ✅ Estrutura
+
+- `env.py`: configuração principal para execução das migrações.
+- `versions/`: diretório onde os scripts de migração versionados são armazenados.
+- `README.md`: este arquivo de referência.
+
+---
+
+## 🚀 Como criar uma nova migração
+
+1. **Garanta que os modelos (`models.py`) estejam atualizados**
+2. **Certifique-se de que a variável `DATABASE_URL` está correta** no `.env` (dentro ou fora do Docker)
+3. Execute o comando:
+
+```bash
+alembic revision --autogenerate -m "descreva_aqui_a_mudança"
+````
+
+---
+
+## 📦 Como aplicar as migrações
+
+**Localmente:**
+
+```bash
+alembic upgrade head
+```
+
+**Dentro do Docker:**
+
+```bash
+docker compose exec backend alembic upgrade head
+```
+
+---
+
+## 🔁 Comandos úteis
+
+| Comando                      | Descrição                                   |
+| ---------------------------- | ------------------------------------------- |
+| `alembic upgrade head`       | Aplica todas as migrações pendentes         |
+| `alembic downgrade -1`       | Desfaz a última migração aplicada           |
+| `alembic history`            | Lista o histórico de versões                |
+| `alembic current`            | Mostra a versão atual aplicada no banco     |
+| `alembic show <revision_id>` | Mostra o conteúdo de uma revisão específica |
+
+---
+
+## ⚠️ Boas práticas
+
+* Nunca edite arquivos de migração aplicados diretamente no banco.
+* Sempre use `--autogenerate` com atenção: revise o conteúdo gerado antes de aplicar.
+* Evite migrações grandes demais. Prefira granularidade por funcionalidade.
+
+---
+
+## 📍 Observação
+
+O hostname `postgres` é válido apenas **dentro do Docker**. Fora dele, use `localhost` na string de conexão (`.env.local`).
+
+```
+
+---
+
+📌 **Salve esse conteúdo como** `backend/alembic/README.md`.
+
+Se quiser, posso também gerar um `Makefile` com comandos para `migrate`, `revision`, `up`, etc., tudo automatizado. Deseja isso?
+```
