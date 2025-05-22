@@ -1,57 +1,82 @@
 import streamlit as st
-from datetime import date
+import datetime
 
-st.set_page_config(page_title="Nova Solicitação de Compra", layout="centered")
+# Simulações de categorias e materiais (substitua por dados reais do backend)
+CATEGORIES = {
+    1: 'Chapas',
+    2: 'Tubos',
+    3: 'Laminados (cantoneiras e vigas)',
+    4: 'Instrumentos (válvulas)',
+    5: 'Conexões'
+}
 
-st.title("📝 Nova Solicitação de Compra")
-st.markdown("Preencha os dados abaixo para iniciar um novo processo de cotação.")
+MATERIALS = {
+    1: 'Inox 316',
+    2: 'Inox 304',
+    3: 'Latão',
+    4: 'Alumínio',
+    5: 'Duplex',
+    6: 'Aço Carbono'
+}
 
-# --- Dados do Item ---
-st.subheader("🔍 Detalhes do Item")
+st.set_page_config(page_title="Cadastro de Pedidos", page_icon="📦")
+st.title("📦 Cadastro de Pedido de Compra")
 
-item = st.text_input("Nome do Item", placeholder="Ex: Roda de liga leve 100mm")
-descricao = st.text_area("Descrição Técnica", placeholder="Especifique dimensões, material, padrão técnico etc.")
-quantidade = st.number_input("Quantidade", min_value=1, step=1)
-data_limite = st.date_input("Data Limite para Entrega", min_value=date.today())
+st.markdown("Preencha os campos abaixo para um ou mais itens de compra. Você pode adicionar quantos quiser antes de enviar.")
 
-# --- Critérios Técnicos (opcional) ---
-st.subheader("⚙️ Critérios Técnicos (opcional)")
-criterios = {}
-col1, col2 = st.columns(2)
-with col1:
-    criterios['peso_preco'] = st.slider("Peso - Preço", 0, 100, 50)
-with col2:
-    criterios['peso_prazo'] = st.slider("Peso - Prazo", 0, 100, 30)
+# Inicializa a lista de pedidos na sessão
+if "purchase_requests" not in st.session_state:
+    st.session_state.purchase_requests = []
 
-criterios['peso_qualidade'] = 100 - criterios['peso_preco'] - criterios['peso_prazo']
+# Formulário de um único item
+with st.form(key="add_item_form"):
+    st.subheader("📝 Novo Item de Compra")
 
-if criterios['peso_qualidade'] < 0:
-    st.warning("A soma dos pesos não pode exceder 100%. Ajuste os valores.")
-    criterios['peso_qualidade'] = 0
+    col1, col2 = st.columns(2)
+    with col1:
+        category_id = st.selectbox("Categoria", options=list(CATEGORIES.keys()), format_func=lambda x: CATEGORIES[x])
+    with col2:
+        material_id = st.selectbox("Material", options=list(MATERIALS.keys()), format_func=lambda x: MATERIALS[x])
 
-# --- Fornecedores ---
-st.subheader("📦 Fornecedores Alvo")
-num_forn = st.number_input("Quantidade de Fornecedores para Cotação", min_value=1, max_value=10, value=3)
-emails_forn = []
-for i in range(num_forn):
-    email = st.text_input(f"Email do Fornecedor {i+1}", key=f"forn_email_{i}")
-    if email:
-        emails_forn.append(email)
+    specification = st.text_area("Especificação técnica", placeholder="Descreva o item com detalhes...")
+    quantity = st.number_input("Quantidade", min_value=1, step=1, value=1)
 
-# --- Envio ---
-st.subheader("🚀 Enviar Solicitação")
+    today = datetime.date.today()
+    default_proposal_deadline = today + datetime.timedelta(days=2)
+    
+    col3, col4 = st.columns(2)
+    with col3:
+        proposal_deadline = st.date_input("Data limite para receber propostas", value=default_proposal_deadline, min_value=today)
+    with col4:
+        delivery_due_date = st.date_input("Data limite para entrega", min_value=today)
 
-if st.button("Enviar Solicitação"):
-    if not item or not descricao or not emails_forn:
-        st.error("Todos os campos obrigatórios devem ser preenchidos.")
-    else:
-        st.success("Solicitação enviada com sucesso! 🎉")
-        st.markdown("### ✅ Resumo da Solicitação")
-        st.json({
-            "item": item,
-            "descricao": descricao,
-            "quantidade": quantidade,
-            "data_limite": str(data_limite),
-            "criterios": criterios,
-            "fornecedores": emails_forn
+    submitted = st.form_submit_button("➕ Adicionar item")
+    if submitted:
+        st.session_state.purchase_requests.append({
+            "category_id": category_id,
+            "category": CATEGORIES[category_id],
+            "material_id": material_id,
+            "material": MATERIALS[material_id],
+            "specification": specification,
+            "quantity": quantity,
+            "proposal_deadline": proposal_deadline.strftime("%d/%m/%Y"),
+            "delivery_due_date": delivery_due_date.strftime("%d/%m/%Y")
         })
+        st.success("Item adicionado com sucesso!")
+
+# Exibe os pedidos atuais
+if st.session_state.purchase_requests:
+    st.subheader("📋 Itens adicionados")
+    for i, item in enumerate(st.session_state.purchase_requests):
+        st.markdown(f"**Item {i+1}:** {item['quantity']}x {item['material']} ({item['category']})")
+        st.markdown(f"- Especificação: {item['specification']}")
+        st.markdown(f"- Propostas até: `{item['proposal_deadline']}` | Entrega até: `{item['delivery_due_date']}`")
+        st.divider()
+
+    # Botão de envio final
+    if st.button("🚀 Enviar todos os pedidos"):
+        # Aqui você chamaria a API do backend com os dados acumulados
+        st.success(f"{len(st.session_state.purchase_requests)} pedido(s) enviados com sucesso!")
+        st.session_state.purchase_requests = []
+else:
+    st.info("Adicione ao menos um item antes de enviar.")
