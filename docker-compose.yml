@@ -10,7 +10,7 @@ services:
     ports:
       - "5432:5432"
     env_file:
-      - .env
+      - ./backend/.env
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
@@ -21,7 +21,7 @@ services:
     ports:
       - "4000:80"
     env_file:
-      - .env
+      - ./backend/.env
     volumes:
       - pgadmin_data:/var/lib/pgadmin
     networks:
@@ -34,7 +34,7 @@ services:
     ports:
       - "8000:8000"
     env_file:
-      - .env
+      - ./backend/.env
     networks:
       - supplycrew-net
     depends_on:
@@ -48,7 +48,7 @@ services:
     ports:
       - "8501:8501"
     env_file:
-      - .env
+      - ./frontend/.env
     networks:
       - supplycrew-net
     depends_on:
