@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from datetime import datetime
 
 from app.models import PurchaseRequest
-from app.schemas import PurchaseRequestBatch
+from backend.app.schemas.schemas import PurchaseRequestBatch
 from app.database import get_db  # função que retorna sessão do banco
 
 router = APIRouter()
