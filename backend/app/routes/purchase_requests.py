@@ -1,35 +1,42 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from datetime import datetime
+from app.schemas.purchase_request import PurchaseRequestCreate, PurchaseRequestRead
+from app.models.purchase_request import PurchaseRequest
+from app.database import get_db
 
-from app.models import PurchaseRequest
-from backend.app.schemas.schemas import PurchaseRequestBatch
-from app.database import get_db  # função que retorna sessão do banco
+router = APIRouter(
+    prefix="/purchase-requests",
+    tags=["purchase_requests"],
+)
 
-router = APIRouter()
+
+@router.post("/", response_model=PurchaseRequestRead)
+def create_purchase_request(
+    request_data: PurchaseRequestCreate,
+    db: Session = Depends(get_db)
+):
+    purchase_request = PurchaseRequest(
+        category_id=request_data.category_id,
+        material_id=request_data.material_id,
+        specification=request_data.specification,
+        quantity=request_data.quantity,
+        proposal_deadline=request_data.proposal_deadline,
+        delivery_due_date=request_data.delivery_due_date,
+    )
+    db.add(purchase_request)
+    db.commit()
+    db.refresh(purchase_request)
+    return purchase_request
 
 
-@router.post("/purchase-requests/")
-def create_purchase_requests(batch: PurchaseRequestBatch, db: Session = Depends(get_db)):
-    try:
-        for item in batch.requests:
-            proposal_deadline = datetime.strptime(item.proposal_deadline, "%d/%m/%Y").date()
-            delivery_due_date = datetime.strptime(item.delivery_due_date, "%d/%m/%Y").date()
+@router.get("/", response_model=list[PurchaseRequestRead])
+def list_purchase_requests(db: Session = Depends(get_db)):
+    return db.query(PurchaseRequest).order_by(PurchaseRequest.id.desc()).all()
 
-            purchase = PurchaseRequest(
-                category_id=item.category_id,
-                material_id=item.material_id,
-                specification=item.specification,
-                quantity=item.quantity,
-                proposal_deadline=proposal_deadline,
-                delivery_due_date=delivery_due_date
-            )
 
-            db.add(purchase)
-
-        db.commit()
-        return {"message": f"{len(batch.requests)} pedido(s) criado(s) com sucesso"}
-
-    except Exception as e:
-        db.rollback()
-        raise HTTPException(status_code=400, detail=f"Erro ao criar pedidos: {e}")
+@router.get("/{request_id}", response_model=PurchaseRequestRead)
+def get_purchase_request(request_id: int, db: Session = Depends(get_db)):
+    purchase_request = db.query(PurchaseRequest).filter_by(id=request_id).first()
+    if not purchase_request:
+        raise HTTPException(status_code=404, detail="Purchase request not found")
+    return purchase_request

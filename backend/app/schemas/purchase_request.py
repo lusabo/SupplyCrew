@@ -1,16 +1,24 @@
-from pydantic import BaseModel
 from datetime import date
-from typing import List
+from pydantic import BaseModel, Field
 
 
-class PurchaseRequestItemCreate(BaseModel):
+class PurchaseRequestCreate(BaseModel):
+    category_id: int
+    material_id: int
+    specification: str
+    quantity: int = Field(gt=0)
+    proposal_deadline: date  # Aceita formato ISO 8601: YYYY-MM-DD
+    delivery_due_date: date
+
+
+class PurchaseRequestRead(BaseModel):
+    id: int
     category_id: int
     material_id: int
     specification: str
     quantity: int
-
-
-class PurchaseRequestWithItemsCreate(BaseModel):
     proposal_deadline: date
     delivery_due_date: date
-    items: List[PurchaseRequestItemCreate]
+
+    class Config:
+        from_attributes = True

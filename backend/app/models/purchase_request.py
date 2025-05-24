@@ -1,7 +1,6 @@
 from sqlalchemy import Column, Integer, Text, Date, ForeignKey
 from sqlalchemy.orm import relationship
 from .base import Base
-
 class PurchaseRequest(Base):
     __tablename__ = "purchase_requests"
 
@@ -14,5 +13,3 @@ class PurchaseRequest(Base):
     delivery_due_date = Column(Date, nullable=False)
 
     supplier_links = relationship("SupplierRequest", back_populates="purchase_request")
-
-    items = relationship("PurchaseRequestItem", back_populates="purchase_request", cascade="all, delete-orphan")
