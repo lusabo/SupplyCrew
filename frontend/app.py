@@ -1,18 +1,15 @@
 import streamlit as st
-from pages import purchase_requests  # módulo com a funcionalidade
 
 st.set_page_config(page_title="SupplyCrew", layout="wide")
 
-# Sidebar com navegação
+from pages import list_request
+
+# Sidebar com link apenas para listagem
+tabs = {"Solicitações de Compra": list_request.render}
+
 st.sidebar.title("SupplyCrew")
-page = st.sidebar.radio("Navegação", ["Início", "Solicitações de Compra"])
+selected_page = st.sidebar.radio("Ir para:", list(tabs.keys()))
 
-# Página inicial
-if page == "Início":
-    st.title("Bem-vindo ao SupplyCrew 🎯")
-    st.markdown("Este é o painel inicial da plataforma de gestão de compras.")
-    st.info("Use o menu à esquerda para acessar as funcionalidades disponíveis.")
-
-# Página de manutenção de solicitações
-elif page == "Solicitações de Compra":
-    purchase_requests.render()
+# Página inicial com mensagem de boas-vindas, sem conteúdo adicional
+if selected_page:
+    tabs[selected_page]()
